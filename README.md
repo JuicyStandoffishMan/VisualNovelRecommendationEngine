@@ -52,7 +52,7 @@ Enter the VN_ID:
 VN_ID is the VNDB id (**without** the leading v). For example, https://vndb.org/v7771 would be **7771**.
 
 ## Using VNDB Data Dumps
-This library stores the necessary dumps as of **May 26, 2023**, but you can always update them manually by visiting [VNDB's Data Dumps](https://vndb.org/d14). Make sure the votes file is renamed to `votes`. The other files can be pulled out of the `db` folder from the nearly-complete database download. Place them in the local `data` folder.
+This repo stores the necessary dumps as of **May 26, 2023**, but you can always update them manually by visiting [VNDB's Data Dumps](https://vndb.org/d14). Make sure the votes file is renamed to `votes`. The other files can be pulled out of the `db` folder from the nearly-complete database download. Place them in the local `data` folder.
 
 ## API Usage
 ```python
