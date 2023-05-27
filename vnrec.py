@@ -19,7 +19,7 @@ class vn:
         self.verbose = verbose
 
         # Ignore these tags (primarily presentation-related)
-        self.ignore_tags = [32, 2040, 2461, 1434, 1431, 43]
+        self.ignore_tags = ignore_tags
 
         self.load_data()
         
@@ -96,6 +96,10 @@ class vn:
             return self.average_ratings[vn_id]
         else:
             return "No ratings available for this VN."
+    
+    def get_last_vn_id(self):
+        # Get number of VNs per the self.df_names DataFrame by looking at the last element
+        return self.df_names['VN_ID'].iloc[-1]
 
     def get_title(self, vn_id):
         # Filter the DataFrame for the given VN_ID
@@ -149,7 +153,10 @@ class vn:
 
         # Compute a score that combines the average rating and the count of ratings
         similar_vns_df['score'] = similar_vns_df['avg_rating'] * similar_vns_df['count_rating']
+
+        # Now you can safely get the top num_vns rows
         return self.min_max_normalize(similar_vns_df['score'].nlargest(self.num_vns))
+
 
     def get_tag_recommendations_score(self, vn_id):
         # Get the row corresponding to the given VN
@@ -181,11 +188,19 @@ class vn:
 
         return combined_rec
     
+    def resize_list(self, l):
+        init_size = len(l)
+        for i in range(init_size, self.num_vns):
+            l.append(0)
+        if(len(l) > self.num_vns):
+            l = l[:self.num_vns]
+        return l
+    
     def get_user_recommendations(self, vn_id):
-        return self.get_user_recommendations_scores(vn_id).index.tolist()
+        return self.resize_list(self.get_user_recommendations_scores(vn_id).index.tolist())
     
     def get_tag_recommendations(self, vn_id):
-        return self.get_tag_recommendations_score(vn_id).index.tolist()
+        return self.resize_list(self.get_tag_recommendations_score(vn_id).index.tolist())
     
     def get_combined_recommendations(self, vn_id):
-        return self.get_combined_recommendations_score(vn_id).index.tolist()
+        return self.resize_list(self.get_combined_recommendations_score(vn_id).index.tolist())
