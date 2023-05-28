@@ -8,7 +8,8 @@ setup(
         'pandas',
         'scipy',
         'sklearn',
-        'numpy'
+        'numpy',
+        'sqlalchemy'
     ],
     package_data={
         'vnrec': ['vn_titles', 'votes', 'tags_vn']

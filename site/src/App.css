@@ -1,0 +1,129 @@
+.App {
+  text-align: center;
+  background-color: #282c34;
+  min-height: 100vh;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.logo-container {
+  transition: transform 0.06s ease-out;
+}
+
+.logo-container:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+
+.App-header {
+  background-color: #282c34;
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.vn_title {
+  height: 2em;
+  margin-bottom: 2em;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+/* unvisited link */
+a:link {
+  color: #41a9ff;
+  text-decoration: none;
+}
+
+/* visited link */
+a:visited {
+  color: #41a9ff;
+  text-decoration: none;
+}
+
+/* mouse over link */
+a:hover {
+  color: rgb(237, 244, 255);
+}
+
+/* selected link */
+a:active {
+  color: #acacac;
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  margin-left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 0.2em;
+  height: 0.2em;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.search-class {
+  font-size: calc(10px + 2vmin);
+  background-color: #282c34;
+  color: white;
+  border: 1px solid white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+  position: absolute;
+  background-color: #282c34;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.search-option {
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.search-option:hover, .search-option.active {
+  background-color: #373f4fa9;
+}
+
+
+.recommendations-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendations-column {
+  flex: 1;
+}
+
+@media screen and (min-width: 900px) {
+  .recommendations-container {
+    flex-direction: row;
+  }
+}

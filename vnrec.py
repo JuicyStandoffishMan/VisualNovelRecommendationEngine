@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 class vn:
-    def __init__(self, num_vns=25, tag_weight=1.5, vote_weight=1.0, tag_exp=2.0, vote_exp=1.0, ignore_tags = [32, 2040, 2461, 1434, 1431, 43], verbose=True):
+    def __init__(self, num_vns=25, tag_weight=1.5, vote_weight=1.0, tag_exp=2.0, vote_exp=1.0, ignore_tags = [32, 2040, 2461, 1434, 1431, 43], verbose=True, skip_recs=False):
         self.num_vns = num_vns
         self.tag_weight = tag_weight
         self.vote_weight = vote_weight
@@ -17,6 +17,7 @@ class vn:
         self.df_ratings = None
         self.df_tags = None
         self.verbose = verbose
+        self.skip_recs = skip_recs
 
         # Ignore these tags (primarily presentation-related)
         self.ignore_tags = ignore_tags
@@ -30,6 +31,9 @@ class vn:
         self.df_names = pd.read_csv('./data/vn_titles', sep='	', header=None, names=['VN_ID', 'Language', 'Official', 'Title', 'Latin Title'])
         self.df_names['VN_ID'] = self.df_names['VN_ID'].str.slice(1)
         self.df_names['VN_ID'] = self.df_names['VN_ID'].astype(int)
+
+        if self.skip_recs:
+            return
 
         # Read the text file
         if self.verbose:
