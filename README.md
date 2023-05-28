@@ -72,7 +72,7 @@ Loading titles
 Enter the Char ID:
 ```
 
-Char is the VNDB char id (**without** the leading c). For example, https://vndb.org/v22768 would be **22768**.
+Char ID is the VNDB char id (**without** the leading c). For example, https://vndb.org/c22768 would be **22768**.
 
 ## Using VNDB Data Dumps
 This repo stores the necessary dumps as of **May 26, 2023**, but you can always update them manually by visiting [VNDB's Data Dumps](https://vndb.org/d14). Make sure the votes file is renamed to `votes`. The other files can be pulled out of the `db` folder from the nearly-complete database download. Place them in the local `data` folder.
