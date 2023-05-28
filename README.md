@@ -2,8 +2,9 @@
 A simple visual novel recommendation engine using VNDB data dumps.
 
 # [VNLike.org - Live Web Version](https://vnlike.org/)
+Note: The website currently only supports VN suggestions.
 
-## Quickstart
+# Quickstart
 Follow these steps to just get recommendations on Windows. Linux/Mac users, YOYO, but it should be similar.
 
 **Make sure you have Python installed:**
@@ -32,9 +33,10 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-**Execute test.py:**
+# VN Recommendations
+**Execute vn_test.py:**
 ```
-python test.py
+python vn_test.py
 ```
 
 You should see some loading messages, followed by a prompt to enter the VN(DB) ID. Note that it will take a while to calculate the tag similarity matrix.
@@ -53,13 +55,33 @@ Enter the VN_ID:
 
 VN_ID is the VNDB id (**without** the leading v). For example, https://vndb.org/v7771 would be **7771**.
 
+# Character Recommendations
+**Execute char_test.py:**
+```
+python char_test.py
+```
+
+You should see some loading messages, followed by a prompt to enter the Char ID.
+```
+Loading char vns
+Loading traits
+Building knn sparse matrix
+Building kNN model
+Loading titles
+
+Enter the Char ID:
+```
+
+Char is the VNDB char id (**without** the leading c). For example, https://vndb.org/v22768 would be **22768**.
+
 ## Using VNDB Data Dumps
 This repo stores the necessary dumps as of **May 26, 2023**, but you can always update them manually by visiting [VNDB's Data Dumps](https://vndb.org/d14). Make sure the votes file is renamed to `votes`. The other files can be pulled out of the `db` folder from the nearly-complete database download. Place them in the local `data` folder.
 
-## SQL Dump
-There is also a SQL dump with 100 entries per score (user, tag, combined) per VN in rec.db using the default params for ease of web use. This can be updated by executing `dump.py`.
+## MySQL Dump
+There is also a script for dumping recommendations and converting the PostgreSQL files VNDB uses to a MySQL database using `db_convert.py`.
 
 ## API Usage
+### VN Recommendations:
 ```python
 from vnrec import vn
 
@@ -71,27 +93,46 @@ top_tags = engine.get_tag_recommendations(vn_id)
 top_combined = engine.get_combined_recommendations(vn_id)
 ```
 
+### Character Recommendations:
+```python
+from crec import vnchar
+
+engine = vnchar()
+char_id = 22768
+
+top_traits = engine.get_trait_recommendations_scores(cid)
+```
+
 Alternatively, there are `_score` suffixes to the above which return not just the IDs of the VNs, but also their normalized scores.
 
 ### Ignored tags
-There are tags ignored in the tag scoring, and is currently not at all exhaustive. It just uses some presentation ones, like ADV and NVL.
+There are tags ignored in the tag scoring, and is currently not at all exhaustive. It just uses some presentation ones, like ADV and NVL. The same field (with different IDs) is supported for both VNs and characters.
 ```python
 self.ignore_tags = [32, 2040, 2461, 1434, 1431, 43]
 ```
 
 ## How it works
+
+### VNs
 There are 2 scoring systems:
 - **User votes:** Gives a "people also liked". It only looks at the public votes supplied by VNDB, as anonymous votes are not available, and applies `vote_exp` **pre-average**.
 - **Similar tags:** Gives a "visual novel like" by using non-zero tag weights. The library will average out all of the tag votes **after** applying `tag-exp` to their weights (while keeping the sign).
 
 A very basic combination scoring system using weighted summation (`vote_weight` and `tag_weight` is also available). `tag_weight` defaults to 1.5 because the vote score tends to dominate and just give the most popular VNs.
 
-## Credits and License
+### Characters
+This is much simpler and just uses common traits, which is whatever VNDB labels as a trait. This includes personality, appearance, role, engages in/subject of, and items.
+
+# Credits and License
 This repo is MIT. See [VNDB's data license](https://vndb.org/d17#4) as well.
 
 Huge shoutout to ChatGPT for writing most of the code and answering all my questions along the way.
 
-## Examples
+# Examples
+<details>
+        
+<summary>VN Recommendations</summary>
+        
 ### White Album 2 Closing Chapter
 ```
 Enter the VN_ID: 7771
@@ -2390,3 +2431,989 @@ Combined:
         25. Amakano 2 (26307)
 }
 ```
+        
+</details>
+
+<details>
+        
+<summary>Characters Recommendations</summary>
+
+### Touma Kazusa (White Album 2)
+```
+Enter the Char ID: 12973
+Recommendations for Touma Kazusa (12973) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Hazuki Shizuku (53448) with score 0.384
+                - Tsukiakari ni Modaeru Harame (20105)
+
+        2. Narusawa Rikka (19051) with score 0.382
+                - Hoshi Ori Yume Mirai (14265)
+                - Hoshi Ori Yume Mirai - Rikka to Anata no 1-Shuunen Kinen, Icha Love Birthday (28160)
+
+        3. Kinoshita Uzuki (85348) with score 0.382
+                - Aikotoba (26537)
+
+        4. Sakuragi Roofolet Ashe (37365) with score 0.374
+                - WAGAMAMA HIGH SPEC (17823)
+                - Wagamama High Spec OC (20524)
+
+        5. Ichinose Honami (35679) with score 0.368
+                - Amakano ~Second Season~ (17843)
+                - Amakano+ (19810)
+                - Amakano ~Second Season~+ (21675)
+                - Amakano 2+ (31813)
+
+        6. Amanogawa Saya (35176) with score 0.365
+                - A Sky Full of Stars (16560)
+                - A Sky Full of Stars -Fine Days- (18907)
+                - Miagete Goran, Yozora no Hoshi o: Interstellar Focus (22303)
+
+        7. Yanagihara Ai (7479) with score 0.365
+                - Hajimete Doushi 2 ~Happy Bakappuru~ (7142)
+
+        8. Ayase Aisa (98081) with score 0.363
+                - Sousaku Kanojo no Ren'ai Koushiki (31136)
+
+        9. Ichinose Ayako (65052) with score 0.363
+                - HarmonEy (22075)
+
+        10. Kagaya Yuna (92165) with score 0.362
+                - Renai X Royale - Love's a Battle (28633)
+                - Ren'ai x Royale - Nonoka & Renna & Yuna Mini After Story (30238)
+                - Ren'ai x Royale - Mari & Shione & Ao Mini After Story (30239)
+
+        11. Habane Kotori (9333) with score 0.362
+                - If My Heart Had Wings (9093)
+                - If My Heart Had Wings -Flight Diary- (10979)
+                - Kono Oozora ni, Tsubasa o Hirogete: snow presents (14812)
+
+        12. Isurugi Yuki (54972) with score 0.361
+                - Niizuma LOVELY x CATION (20406)
+
+        13. Morisumi Ichika (75143) with score 0.358
+                - Sugar * Style (24320)
+                - Sugar*Style Koibito Ijou Fuufu Miman After Story!! (25813)
+
+        14. Kisugi Tsukimi (54843) with score 0.354
+                - Trouble Days (680)
+
+        15. Kurusu Yukako (54160) with score 0.354
+                - Ninki Seiyuu: How to Make a Pop Voice Actress (20148)
+                - Boku no Mirai wa, Koi to Kakin to. ~Charge To The Future~ (24275)
+
+        16. Kirishima Ayame (19696) with score 0.354
+                - Yankee Kanojo to Kozukuri Gakuen Life ~Suki to ka Iuna! Buttobasu zo! Omae no Aka-chan Hoshikunacchimau Darou ga…~ (12493)
+
+        17. Aritagawa Nio (71927) with score 0.354
+                - Loca-Love: My Cute Roommate (23067)
+                - Loca Love: My Commuting Crush (25690)
+                - Loca-Love: My Pure Priestess (26376)
+
+        18. Amahara Sayuri (41443) with score 0.354
+                - Ane wa Kanojo de Senzoku Maid (7656)
+
+        19. Wataribe Kyouka (92988) with score 0.354
+                - Ichizu na Kanojo to Koi Shitai (29195)
+                - Ichizu na Kanojo to Koi Shitai ver. Hirohashi Runa (34410)
+
+        20. Sakuragibashi Rito (65602) with score 0.352
+                - Karigurashi Ren'ai (22045)
+
+        21. Houjouin Seika (9857) with score 0.351
+                - Princess Lover! (765)
+
+        22. Kibitsumiya Akari (8445) with score 0.351
+                - Onigokko! (5549)
+                - Onigokko! Fandisc (7625)
+
+        23. Tsujidou Ai (5398) with score 0.351
+                - Tsujidou-san no Jun'ai Road (9879)
+                - Tsujidou-san no Virgin Road (12283)
+                - Maji de Watashi ni Koishinasai!! Spark (20012)
+                - Minato Carnival FD (21122)
+
+        24. Hiiragi Mio (34046) with score 0.35
+                - Koi Suru Kimochi no Kasanekata (17632)
+                - Koi Suru Kimochi no Kasanekata ~Kasaneta Omoi o Zutto~ (19104)
+
+        25. Byakudan Midori (9765) with score 0.349
+                - Kanojo x Kanojo x Kanojo ~Sanshimai to no Dokidoki Kyoudou Seikatsu~ (702)
+                - Kanojo x Kanojo x Kanojo Dokidoki Full Throttle! (1442)
+
+}
+```
+
+### Kurashina Asuka (Aokana)
+```
+Enter the Char ID: 22767
+Recommendations for Kurashina Asuka (22767) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Hirosawa Hikari (35644) with score 0.469
+                - Under One Wing (17827)
+
+        2. Himeno Sena (33047) with score 0.435
+                - Koi x Shin Ai Kanojo (17516)
+
+        3. Hayakawa Natsuo (1572) with score 0.43
+                - Nagisa no (401)
+
+        4. Suzumori Ichika (60725) with score 0.414
+                - Bishoujo Mangekyou -Tsumi to Batsu no Shoujo- (19182)
+
+        5. Tachibana Nonoka (54732) with score 0.409
+                - Anata ni Koi Suru Ren'ai Recette (20315)
+
+        6. Tsukigase Mahiru (36311) with score 0.402
+                - Sorairo Innocent (17980)
+
+        7. Ursule Fleur Jeanmaire (9484) with score 0.398
+                - Tsuki ni Yorisou Otome no Sahou (10680)
+                - Otome Riron to Sono Shuuhen -Ecole de Paris- (12246)
+                - Otome Riron to Sono go no Shuuhen -Belle Epoque- (18130)
+
+        8. Nagamine Mikuri (49260) with score 0.398
+                - Amenity's Life (19609)
+
+        9. Kotomiya Chinatsu (10399) with score 0.398
+                - Lover Able (5734)
+                - Dousei Lover Able (7774)
+
+        10. Migita Hibiki (39200) with score 0.398
+                - Maitetsu (18131)
+                - Maitetsu - Last Run!! (25635)
+
+        11. Otonashi Ophilia Reo (15019) with score 0.397
+                - Loveressive (11052)
+
+        12. Himenomiya Miharu (8968) with score 0.397
+                - Step×Steady (265)
+                - ~Koidamazume~ (4061)
+
+        13. Koyurugi Yurugi (55651) with score 0.393
+                - Suisou Ginka no Istoria (20471)
+
+        14. Hoshimi Tsukuyo (16389) with score 0.39
+                - Kiss Ato (13632)
+                - Ai Kiss (26180)
+
+        15. Suzushiro Nanami (11474) with score 0.389
+                - Skyprythem (2624)
+
+        16. Higuchi Yumi (28351) with score 0.389
+                - memories (2914)
+
+        17. Kakogawa Mirai (3687) with score 0.387
+                - Four-leaf (1590)
+
+        18. Otowa Mizuki (42929) with score 0.387
+                - Areas ~Koi Suru Otome no 3H~ (3817)
+
+        19. Aria Celestia (34617) with score 0.384
+                - Unlucky Re:Birth/Reverse (17560)
+
+        20. Hatsushiba Kisa (655) with score 0.383
+                - Diamic Days (6671)
+
+        21. Yuuki Haruna (1188) with score 0.383
+                - FORTUNE ARTERIAL (87)
+
+        22. Sendou Erika (1186) with score 0.382
+                - FORTUNE ARTERIAL (87)
+
+        23. Ogura Minamo (27294) with score 0.381
+                - Dolphin Divers (9916)
+
+        24. Isshi Mizuki (20421) with score 0.38
+                - Ame Koi (15426)
+
+        25. Kawakami Kazuko (3508) with score 0.379
+                - Majikoi! Love Me Seriously!! (1143)
+                - Maji de Watashi ni Koishinasai! S (6245)
+                - Maji de Watashi ni Koishinasai! Drama CD (16539)
+                - Maji de Watashi ni Koishinasai! A-1 (20598)
+                - Maji de Watashi ni Koishinasai! A-2 (20599)
+                - Maji de Watashi ni Koishinasai! A-3 (20600)
+                - Maji de Watashi ni Koishinasai! A-4 (20601)
+                - Maji de Watashi ni Koishinasai! A-5 (20602)
+                - Maji de Watashi ni Koishinasai! A Plus Disk (20604)
+                - Minato Carnival FD (21122)
+
+}
+```
+
+### Kaguya Riho (DEARDROPS)
+```
+Enter the Char ID: 5243
+Recommendations for Kaguya Riho (5243) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Misumi Chisa (15001) with score 0.429
+                - Kimi to Issho ni (7608)
+
+        2. Abe Kimiko (2975) with score 0.425
+                - Back Stage (845)
+
+        3. Igano Rin (8248) with score 0.421
+                - Hachimitsu Otome Blossomdays (2617)
+
+        4. Koganei Tamaki (44371) with score 0.408
+                - A Sky Full of Stars -Fine Days- (18907)
+                - Miagete Goran, Yozora no Hoshi o: Interstellar Focus (22303)
+
+        5. Yuminaga Misaki (33077) with score 0.404
+                - Meguru Kisetsu no Yakusoku to, Tsunaida Sono Te no Nukumori to (12027)
+
+        6. Sudou Kana (45733) with score 0.391
+                - Shikotama Slave ~Aruji de Shimai na Tenshi to Akuma~ (2199)
+
+        7. Inagaki Miyuu (7732) with score 0.391
+                - Manbiki, Dame. Zettai!! ~Seiso na Manbiki Joshi - Class Zen'in 2-hon Sashi! Double ω Keikaku~ (5119)
+
+        8. Josette Calicio (23961) with score 0.389
+                - Kyonyuu Try! -Tanki Shuuchuu Chichi Momi Lesson- (6591)
+
+        9. Sasameki Urumi (38704) with score 0.389
+                - Koi ☆ Katsu! (6366)
+
+        10. Mikogami Haruruko (34624) with score 0.389
+                - Royal Garden ~Otome ni Koi Suru Ouji no Gikyoku~ (17826)
+
+        11. Ayase Natsuki (22471) with score 0.384
+                - Sakaagari Hurricane - Let's Pile Up Our School!! (1199)
+
+        12. Mitamura Karen (43363) with score 0.382
+                - School Love! 2 ~Koi Suru Parfaittic~ (1659)
+                - School Love! ~Soyokaze no Harmony~ (5721)
+
+        13. Omigawa Nadeshiko (31219) with score 0.382
+                - Kiss x 800 ~Kiss de Gakuen Houkai? Houkago Hen~ (12220)
+                - Kiss x 800 ~Kiss de Gakuen Houkai? Okujou Hen~ (12847)
+
+        14. Akiyama Ryouka (15029) with score 0.382
+                - Kimi to Issho ni 2 (13334)
+
+        15. Elizabeth Oshiro (46109) with score 0.381
+                - Lucid9 (16156)
+
+        16. Takatoo Nanase (2522) with score 0.379
+                - Kakyuusei 2 (1083)
+                - Elf All Stars Datsui Jan 3 (2296)
+
+        17. Kanzaki Karen (3386) with score 0.379
+                - Meitantei Shikkaku na Kanojo (2197)
+
+        18. Kitami Rin (77297) with score 0.379
+                - Sakura Iro, Mau Koro ni (24650)
+
+        19. Natsu Natsuki (10032) with score 0.373
+                - Chu→ning Lover (10026)
+
+        20. Shamrock (80088) with score 0.368
+                - SPIRAL!! (24748)
+
+        21. Ayanokouji Ouka (23716) with score 0.368
+                - Higyaku Ms ~Seieki Shiboritoranaide!~ (2217)
+
+        22. Yuuki Hikari (9673) with score 0.368
+                - Sore wa Maichiru Sakura no You ni (1115)
+                - Sore wa Maichiru Sakura no You ni (1115)
+                - Sore wa Maichiru Sakura no You ni (1115)
+
+        23. Koizumi Yuzuki (20660) with score 0.367
+                - Resign (7958)
+
+        24. Kumoi Akari (9341) with score 0.365
+                - If My Heart Had Wings (9093)
+                - If My Heart Had Wings -Flight Diary- (10979)
+                - If My Heart Had Wings -Flight Diary- (10979)
+                - If My Heart Had Wings -Flight Diary- (10979)
+                - If My Heart Had Wings -Flight Diary- (10979)
+
+        25. Kira Rin (33185) with score 0.365
+                - Sakaagari Hurricane - Let's Pile Up Our School!! (1199)
+                - Sakaagari Hurricane - Let's Pile Up Our School!! (1199)
+                - Sakaagari Hurricane - Let's Pile Up Our School!! (1199)
+                - Sakaagari Hurricane - Let's Pile Up Our School!! (1199)
+
+}
+```
+
+### Sakaki Yumiko (Fruit of Grisaia)
+```
+Enter the Char ID: 569
+Recommendations for Sakaki Yumiko (569) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Shinozaki Marika (19045) with score 0.417
+                - Hoshi Ori Yume Mirai (14265)
+
+        2. Ichinose Mirai (19162) with score 0.417
+                - Koi iro Chu! Lips (4017)
+
+        3. Narusawa Rikka (19051) with score 0.406
+                - Hoshi Ori Yume Mirai (14265)
+                - Hoshi Ori Yume Mirai - Rikka to Anata no 1-Shuunen Kinen, Icha Love Birthday (28160)
+
+        4. Natsushima Misaki (17530) with score 0.394
+                - Namaiki Delation (12288)
+
+        5. Yotsuba Kohaku (87164) with score 0.382
+                - Ore no Sugata ga, Toumei ni!? Invisible to Suuki na Unmei (26989)
+
+        6. Oribe Kokoro (45355) with score 0.377
+                - Amatsutsumi (18852)
+
+        7. Kurahashi Seira (88382) with score 0.37
+                - Tsuki no Kanata de Aimashou (24803)
+                - Tsuki no Kanata de Aimashou: SweetSummerRainbow (26485)
+
+        8. Asagiri Kasumi (92066) with score 0.37
+                - Saimin Datsujo ~Subete ga Boku no Jiyuu ni Naru Sekai e Youkoso~ Asagiri Kasumi Hen (28884)
+
+        9. Shima Sako (38260) with score 0.37
+                - Omae no Pantsu wa Nani-iro da!? (7939)
+
+        10. Sakuragibashi Rito (65602) with score 0.365
+                - Karigurashi Ren'ai (22045)
+
+        11. Akitsuki Shiho (58414) with score 0.364
+                - Toshishita Gentei Nuki x2 Share-house ~Shiborare Kyoudou Seikatsu~ (20663)
+
+        12. Shiina Miyako (3509) with score 0.362
+                - Majikoi! Love Me Seriously!! (1143)
+                - Maji de Watashi ni Koishinasai! S (6245)
+                - Maji de Watashi ni Koishinasai! Drama CD (16539)
+                - Maji de Watashi ni Koishinasai! A-1 (20598)
+                - Maji de Watashi ni Koishinasai! A-2 (20599)
+                - Maji de Watashi ni Koishinasai! A-3 (20600)
+                - Maji de Watashi ni Koishinasai! A-4 (20601)
+                - Maji de Watashi ni Koishinasai! A-5 (20602)
+                - Maji de Watashi ni Koishinasai! A Plus Disk (20604)
+                - Minato Carnival FD (21122)
+
+        13. Izumi Wakoto (12592) with score 0.361
+                - LOVELY×CATION2 (10288)
+
+        14. Yuuri Shachi (40409) with score 0.36
+                - The Princess, the Stray Cat, and Matters of the Heart (18148)
+                - The Princess, the Stray Cat, and Matters of the Heart 2 (19841)
+
+        15. Yoshinoya Seine (12591) with score 0.358
+                - LOVELY×CATION2 (10288)
+
+        16. Tokiwa Kano (87838) with score 0.357
+                - Hamidashi Creative (27449)
+                - Hamidashi Creative Totsu (33205)
+
+        17. Kiritou Kureha (41745) with score 0.355
+                - Sakuranomori Dreamers (18760)
+                - Sakura no Mori † Dreamers 2 (20264)
+
+        18. Mizunose Kotori (17040) with score 0.352
+                - AstralAir no Shiroki Towa (12984)
+                - AstralAir no Shiroki Towa Finale -Shiroki Hoshi no Yume- (19294)
+
+        19. Ishigaki Yukari (69254) with score 0.352
+                - Natsu Koi! (21494)
+
+        20. Hinamori Sakurako (79206) with score 0.348
+                - Heroine wa Tomodachi Desu ka? Koibito Desu ka? Soretomo Tomefure Desu ka? (25124)
+
+        21. Ichinose Iori (45931) with score 0.347
+                - Yakimochi Kanojo no Ichizu na Koi (19274)
+
+        22. Kanna Kana (20426) with score 0.346
+                - PRIMAL HEARTS (14887)
+                - PRIMAL HEARTS 2 (17038)
+
+        23. Maisaka Mai (77388) with score 0.345
+                - Study § Steady (24689)
+                - Study § Steady 2 (32624)
+
+        24. Akitsushima Chihaya (23851) with score 0.344
+                - Hachinin no Mazokko (14932)
+
+        25. Asahina Hinata (92312) with score 0.343
+                - Koinoha -Koi no Share House- (29005)
+
+}
+```
+
+### Kazami Yuuki (Fruit of Grisaia)
+```
+Enter the Char ID: 567
+Recommendations for Kazami Yuuji (567) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Toubu Kaito (891) with score 0.444
+                - Hello, Goodbye (5316)
+
+        2. Mutsura Yuuto (5457) with score 0.411
+                - DRACU-RIOT! (8213)
+
+        3. Kakei Kyoutarou (9360) with score 0.411
+                - Daitoshokan no Hitsujikai (8158)
+                - Daitoshokan no Hitsujikai -Dreaming Sheep- (12480)
+
+        4. Chitose Haruki (908) with score 0.411
+                - Tenshin Ranman Lucky or Unlucky!? (1322)
+
+        5. Haruna Riku (24584) with score 0.407
+                - AstralAir no Shiroki Towa (12984)
+                - AstralAir no Shiroki Towa Finale -Shiroki Hoshi no Yume- (19294)
+
+        6. Mizuwa Akihito (1435) with score 0.406
+                - Coμ -Black Dragon in a Gentle Kingdom- (1896)
+
+        7. Yanagise Chouji (12295) with score 0.402
+                - Ikinari Anata ni Koishiteiru (5240)
+
+        8. Sawai Tooru (5502) with score 0.401
+                - Monobeno (8435)
+                - Monobeno -Happy End- (12392)
+                - Maitetsu (18131)
+
+        9. Isac (109816) with score 0.396
+                - My Real Desire (33014)
+
+        10. Tsuchimi Rin (4671) with score 0.396
+                - SHUFFLE! (28)
+                - Tick! Tack! (201)
+                - Really? Really! (202)
+                - SHUFFLE! Love Rainbow (6427)
+                - Navel * Plus (8664)
+                - Shuffle! Essence+ Tokuten Disk (12525)
+                - Princess x Princess (30216)
+
+        11. Caim Astraea (515) with score 0.39
+                - Aiyoku no Eustia (3770)
+
+        12. Tachibana Kazuma (50252) with score 0.389
+                - Mysteries of the Heart: The Psychic Detective Case Files (19684)
+
+        13. Naoe Yamato (3885) with score 0.387
+                - Majikoi! Love Me Seriously!! (1143)
+                - Maji de Watashi ni Koishinasai! S (6245)
+                - Tsujidou-san no Jun'ai Road (9879)
+                - Maji de Watashi ni Koishinasai! Drama CD (16539)
+                - Maji de Watashi ni Koishinasai!! Spark (20012)
+                - Maji de Watashi ni Koishinasai! A-1 (20598)
+                - Maji de Watashi ni Koishinasai! A-2 (20599)
+                - Maji de Watashi ni Koishinasai! A-3 (20600)
+                - Maji de Watashi ni Koishinasai! A-4 (20601)
+                - Maji de Watashi ni Koishinasai! A-5 (20602)
+                - Maji de Watashi ni Koishinasai! A Plus Disk (20604)
+                - Maji de Watashi ni Koishinasai! A - Ryouken Route After (27092)
+
+        14. Okonogi Masaya (3103) with score 0.386
+                - Princess Evangile (6710)
+                - Princess Evangile W Happiness (8900)
+
+        15. Nonomura Yuuto (36919) with score 0.386
+                - Tsumi no Hikari Rendezvous (17872)
+                - Tsumi no Hikari Rendezvous: Mikan Blossom (37380)
+
+        16. Yagami Yuuichi (4446) with score 0.383
+                - Hara ☆ Kano!! ~Ano Ko to Lovelove Harabote Seikatsu~ (2736)
+
+        17. Arichi Masaomi (49563) with score 0.38
+                - Senren＊Banka (19073)
+
+        18. Kita Chihaya (41322) with score 0.38
+                - Puramai Wars (16339)
+
+        19. Kaburagi Ayumu (36958) with score 0.379
+                - Material Brave (7633)
+                - Material Brave Ignition (10834)
+
+        20. Ayatsuji Hinata (55124) with score 0.379
+                - Samidare Growing Up! (17985)
+
+        21. Azai Kyousuke (305) with score 0.378
+                - G-senjou no Maou - The Devil on G-String (211)
+                - G-Senjou no Maou - Dai Bangaihen "Sharin no Kuni no Maou" (20273)
+
+        22. Shirosaki Joutarou (22700) with score 0.377
+                - Kashimashi Communication (2908)
+
+        23. Tsushima Reo (60) with score 0.376
+                - Tsuyokiss (397)
+                - Tsuyokiss 2gakki (398)
+                - Minikiss ~Tsuyokiss Fan Disc~ (399)
+                - Tsuyokiss 3gakki (6173)
+                - Tsuyokiss FESTIVAL (18005)
+
+        24. Saegusa Kazuki (12489) with score 0.375
+                - Hitotsu Tobashi Ren'ai (11300)
+
+        25. Fujima Ren (44410) with score 0.375
+                - The Ditzy Demons Are in Love With Me (17515)
+                - The Ditzy Demons Are in Love With Me - Fandisc (18791)
+
+}
+```
+
+### Saya (Saya no Uta)
+```
+Enter the Char ID: 66
+Recommendations for Saya (66) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Azuma Ruka (16301) with score 0.347
+                - 3days ~Michiteyuku Toki no Kanata de~ (1085)
+
+        2. Kouzuki Kazuna (16799) with score 0.333
+                - Cartagra ~Affliction of the Soul~ (515)
+                - Nagomibako Innocent Grey Fandisc (916)
+
+        3. Amase Hikaru (48604) with score 0.33
+                - Koakuma Hatsuiku Chu~! (19495)
+
+        4. Ai (51515) with score 0.308
+                - L.i.n.k. -Kimyou na Unmei ni Tsunagareta Monotachi no, Chi to Namida no Uta- (2221)
+
+        5. Amagasa Hikari (12950) with score 0.3
+                - Tamahaji! -Tamatama Hajikeru Imouto-tachi- (12565)
+
+        6. Imazato Koyomi (60634) with score 0.297
+                - Niizuma Koyomi (20515)
+
+        7. Sora (119969) with score 0.294
+                - Stellar ☆ Theater (1185)
+
+        8. Sawatari Nanagi (10714) with score 0.293
+                - Aete Mushi Suru Kimi to no Mirai ~Relay Broadcast~ (10803)
+
+        9. Serizawa Mizuho (34362) with score 0.293
+                - Love Letter (4948)
+
+        10. Motai Ikue (26715) with score 0.291
+                - Bijukubo "Iyarashii Kaa-san de Gomenne..." (1994)
+
+        11. Kagurazaka Ikoi (43473) with score 0.289
+                - JOKER -Shisen no Hate no Doukeshi- (10448)
+
+        12. Sagisawa Karen (48545) with score 0.289
+                - Ero Zemi ~Ecchi ni Yaru-ki ni ABC~ (19391)
+
+        13. Kuragano Hitoha (66245) with score 0.288
+                - Kahogo de Ecchi na Boku no Ane (22245)
+
+        14. Kumagai Haruka (87959) with score 0.286
+                - Sukebe na Shojo no Tsukurikata (27523)
+
+        15. Yurifina Sol Eleanord (23383) with score 0.286
+                - Unionism Quartet (15288)
+                - Unionism Quartet A3-Days (18882)
+
+        16. Shirogo Nami (40489) with score 0.286
+                - Play! Play! Play! Shi (16935)
+
+        17. Miyama Rina (48601) with score 0.283
+                - Koakuma Hatsuiku Chu~! (19495)
+
+        18. Sakihara Rin (55771) with score 0.282
+                - Chiccha na Hanayome ~Mada Mada Tsubomi da mon~ (20284)
+
+        19. Sakamaki Yukiho (23106) with score 0.278
+                - Meidokissa. (16081)
+
+        20. Ayasaki Nanoka (21436) with score 0.277
+                - Hare Nochi Kitto Nanohana Biyori (14886)
+
+        21. Great Sage (105267) with score 0.275
+                - All Demons go to Heaven (34200)
+
+        22. Nakanokouji Ayano (12192) with score 0.274
+                - Genmukan ~Aiyoku to Ryoujoku no Inzai~ (772)
+                - Shinshou Genmukan (2605)
+
+        23. Momo (24930) with score 0.274
+                - Bunny Black 2 (8192)
+
+        24. Uzuki Saki (24617) with score 0.273
+                - Sakura Synchronicity (16215)
+
+        25. Maya (31871) with score 0.273
+                - Triptych (537)
+
+}
+```
+
+### Rance (Rance X)
+```
+Enter the Char ID: 735
+Recommendations for Rance (735) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Rance (52689) with score 0.478
+                - Toushin Toshi II (889)
+                - Rance: Quest for Hikari (1414)
+                - Rance II - Hangyaku no Shoujo-tachi - (1427)
+                - Rance III - The Fall of Leazas - (1829)
+                - Kichikuou Rance (2045)
+
+        2. N/A (95156) with score 0.327
+                - Fantasy Tavern Sextet -Vol.1 New World Days- (29482)
+                - Fantasy Tavern Sextet -Vol.2 Adventurer's Days- (31090)
+                - Fantasy Tavern Sextet -Vol.3 Postlude days- (31091)
+
+        3. Kotetsu (116620) with score 0.327
+                - Isekai Erect (38822)
+
+        4. Emilio (16871) with score 0.322
+                - Himegari Dungeon Meister (1195)
+                - Ikusa Megami Verita (2836)
+                - Soukoku no Arterial (8424)
+
+        5. Darks (22342) with score 0.313
+                - Bunny Black (3947)
+                - Bunny Black 2 (8192)
+                - Bunny Black 3 (12186)
+
+        6. Handa Nora (40411) with score 0.306
+                - The Princess, the Stray Cat, and Matters of the Heart (18148)
+                - The Princess, the Stray Cat, and Matters of the Heart 2 (19841)
+
+        7. Nulkan (95753) with score 0.293
+                - Shuggerlain (30407)
+
+        8. Weissheit Zerinder (19830) with score 0.289
+                - Madou Koukaku ~Yami no Tsuki Megami wa Doukoku de Utau~ (11620)
+
+        9. Louie Marcillen (31110) with score 0.288
+                - Ikusa Megami Verita (2836)
+                - Fuukan no Grasesta (23199)
+
+        10. Protagonist (5167) with score 0.287
+                - Eiyuu Senki - The World Conquest (6458)
+                - Eiyu*Senki Gold - A New Conquest (12033)
+
+        11. Sakagami Habaki (34796) with score 0.286
+                - Dies irae ~Acta est Fabula~ (548)
+                - Kajiri Kamui Kagura (5844)
+
+        12. Daijuuji Kurou (931) with score 0.284
+                - Deus Machina Demonbane (231)
+
+        13. Sugisawa Reiji (17172) with score 0.282
+                - Ura Kyoushi ~Haitoku no In'etsu Jugyou~ (7442)
+
+        14. TetuOne (11897) with score 0.278
+                - Shichinin no Online Gamers ~Offline~ (545)
+
+        15. Hongou Kazuto (63854) with score 0.278
+                - Shin Koihime † Musou ~Otome Ryouran ☆ Sangokushi Engi~ (1967)
+                - Shin Koihime † Musou ~Moeshouden~ (3987)
+                - Sengoku † Koihime ~Otome Kenran ☆ Sengoku Emaki~ (13188)
+                - Shin Koihime † Eiyuutan (16463)
+                - Shin Koihime † Musou -Kakumei- Souten no Haou (18649)
+                - Shin Koihime † Musou -Kakumei- Son Go no Ketsumyaku (20591)
+                - Shin Koihime † Musou -Kakumei- Ryuuki no Taimou (20592)
+                - Shin Koihime † Eiyuutan 4 ~Otome Enran ☆ Sangokushi Engi [Go]~ (31814)
+                - Shin Koihime † Eiyuutan 5 ~Otome Enran ☆ Sangokushi Engi [Gi]~ (31815)
+                - Shin Koihime † Eiyuutan - Gaiden - Shiratsuki no Tomoshibi (31817)
+
+        16. Alex (111218) with score 0.277
+                - Trouble in Paradise (36700)
+
+        17. Miyabi Kurou (2048) with score 0.276
+                - Idols Galore! (141)
+                - Motto Muriyari! (6086)
+                - Ohime-sama o Otose! (6620)
+
+        18. Caim Astraea (515) with score 0.275
+                - Aiyoku no Eustia (3770)
+
+        19. Koji Takei (105086) with score 0.275
+                - Takei's Journey (34166)
+
+        20. Mimori Ichirou (32325) with score 0.274
+                - Hatsumira -from the future undying- (15080)
+
+        21. Touma Taiga (8673) with score 0.273
+                - DUEL SAVIOR (309)
+                - Otome Crisis (479)
+                - Xross Scramble (491)
+
+        22. Protagonist (88192) with score 0.273
+                - HaremKingdom (26765)
+                - Harem ja Nai yo Kingdom - Hikari & Sophia & Kiki Hen (28825)
+                - Harem ja Nai yo Kingdom - Charlone & Marrou Hen (28881)
+
+        23. Urabe Keisuke (8926) with score 0.272
+                - Onigokko! (5549)
+                - Onigokko! Fandisc (7625)
+
+        24. Nick (110176) with score 0.272
+                - Devilish Business (36379)
+
+        25. Hoshikawa Sorata (58405) with score 0.272
+                - Yozora Rhapsody (20348)
+
+}
+```
+
+### Monika (Doki Doki Literature Club)
+```
+Recommendations for Monika (64502) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Monika (68457) with score 0.801
+                - Doki Doki! RainClouds (22637)
+                - Doki Doki! New Eyes (23036)
+
+        2. Monicules (69024) with score 0.49
+                - Doki Doki Do You Lift Club! (22717)
+
+        3. Monika (69672) with score 0.479
+                - Doki Doki School Club (22824)
+
+        4. Monika (91063) with score 0.471
+                - Doki Doki Blue Skies (28556)
+
+        5. Monika (70506) with score 0.452
+                - Doki Doki Literature Club 2 Next History (22971)
+
+        6. Kuresato Nagi (43133) with score 0.438
+                - Dear Pianissimo (674)
+
+        7. Suzunari Rinko (26413) with score 0.426
+                - Kamitsure ~7 no Nijou Fushigi~ (15731)
+
+        8. Aoki Minami (12891) with score 0.415
+                - Ryoujoku Sensei (5921)
+
+        9. Takase Kyouka (11563) with score 0.415
+                - Okitsune-sama no Koisuru Omajinai (3865)
+
+        10. Sawada Ruri (46639) with score 0.409
+                - Naisho no Tintin Time (1735)
+
+        11. Yuri (68454) with score 0.409
+                - Doki Doki! RainClouds (22637)
+                - Doki Doki! New Eyes (23036)
+
+        12. Ziva Shani (45622) with score 0.405
+                - One Thousand Lies (19014)
+
+        13. Shibamiya Rina (43974) with score 0.403
+                - Amaekata wa Kanojo Nari ni. (18335)
+
+        14. Yukiwa Fuuka (33279) with score 0.402
+                - Onna no Ko wa Do S na Hentai de Dekiteiru (17342)
+
+        15. Sheila El Elise (34278) with score 0.402
+                - Maji Suki ~Marginal Skip~ (1140)
+
+        16. Nanase Ririko (33540) with score 0.402
+                - Mahou Senshi Extra Stage ~10th Anniversary~ (11135)
+
+        17. Hayase Misora (24412) with score 0.402
+                - Yokujou Zecchou Love Drug ~Akogare no Bishoujo ga Ore ni Omata Hiraite Ecchi no Onedari~ (12833)
+
+        18. Akaba Chizuru (67838) with score 0.395
+                - Seitokai no Ichizon - DS Suru Seitokai (3209)
+                - Seitokai no Ichizon Lv.2 Portable (26748)
+
+        19. Natsumi (77609) with score 0.395
+                - 120 Yen no Haru (2585)
+
+        20. Hinomiya Matsuri (119874) with score 0.395
+                - Real Eroge Situation! DT (39872)
+
+        21. Chitose Mizuki (54948) with score 0.392
+                - Angel Wish ~Houkago no Meshitsukai ni Chu!~ (1176)
+
+        22. Kajiwara Hinako (91191) with score 0.392
+                - Hare Tokidoki Otenkiame (5193)
+
+        23. Tomosaka Rina (46635) with score 0.392
+                - Naisho no Tintin Time (1735)
+
+        24. Aiba Erika (52070) with score 0.389
+                - Tenshitsuki no Shoujo (1039)
+
+        25. Kay (68413) with score 0.389
+                - Odd Love Test (22631)
+
+}
+```
+
+### Yuri (Doki Doki Literature Club)
+```
+Recommendations for Yuri (64504) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Yuri (68454) with score 0.917
+                - Doki Doki! RainClouds (22637)
+                - Doki Doki! New Eyes (23036)
+
+        2. Yuronk (69025) with score 0.475
+                - Doki Doki Do You Lift Club! (22717)
+
+        3. Yuri (91066) with score 0.44
+                - Doki Doki Blue Skies (28556)
+
+        4. Onose Ayame (47745) with score 0.402
+                - Triangle Love -Apricot Fizz- (19445)
+
+        5. Yui (69669) with score 0.402
+                - Japan Book High School Club Dating Simulator (22751)
+
+        6. Shizuru (34761) with score 0.396
+                - Tsun na Kanojo Dere na Kanojo (1336)
+
+        7. Monika (68457) with score 0.388
+                - Doki Doki! RainClouds (22637)
+                - Doki Doki! New Eyes (23036)
+
+        8. Shirakawa Iori (18221) with score 0.385
+                - uni. (4253)
+
+        9. Sakurano Honoka (65291) with score 0.384
+                - White Princess (3039)
+                - White Princess (3039)
+
+        10. Senpai (73837) with score 0.379
+                - Monochro no Umi o Tadayou Hito (23938)
+
+        11. Kunashi Hatsuka (36728) with score 0.379
+                - Kotowari ~Kimi no Kokoro no Koboreta Kakera~ (6918)
+
+        12. Sumizato Kiwako (23962) with score 0.378
+                - Kyonyuu Try! -Tanki Shuuchuu Chichi Momi Lesson- (6591)
+
+        13. Sasaki Kaoru (11309) with score 0.377
+                - Maple Colors 2 (1285)
+
+        14. Sayori (68455) with score 0.377
+                - Doki Doki! RainClouds (22637)
+                - Doki Doki! New Eyes (23036)
+
+        15. Kariya Yuki (27459) with score 0.377
+                - Tozasareta In'yoku no Gakuen (11962)
+
+        16. Yabusame Kaname (33811) with score 0.377
+                - Kurui no Tsuki (17692)
+
+        17. Kujou Akane (22924) with score 0.377
+                - Onegai Tasukete!! 2 ~Sosogare Tsuzukeru Seieki~ (14141)
+
+        18. Kuriyama Natsuko (55024) with score 0.377
+                - Sakura no Uta -Sakura no Mori no Ue o Mau- (562)
+                - Sakura no Toki -Sakura no Mori no Shita o Ayumu- (20431)
+
+        19. Hoshioki Marika (32129) with score 0.377
+                - Hyakugojuunenme no Mahoutsukai (15408)
+
+        20. Hazuki Chika (4993) with score 0.367
+                - Aikagi ~Hidamari to Kanojo no Heyagi~ (1270)
+
+        21. Ou Kagetsu (24547) with score 0.367
+                - Senjin Otome -Makina ni Yadorishi Kokoro ga Negau wa...- (12557)
+
+        22. Lillian (40729) with score 0.367
+                - Sepia Tears (8489)
+
+        23. Miyazaki Nodoka (25381) with score 0.367
+                - Mahou Sensei Negima! 1-Jikanme ~Okochama Sensei wa Mahou Tsukai!~ (2097)
+                - Mahou Sensei Negima! 2-Jikanme ~Tatakau Otome-tachi! Mahora Daiundokai SP!~ (2098)
+
+        24. Takachiho Sayo (16449) with score 0.365
+                - The Shadows of Pygmalion (12072)
+
+        25. Toujou Shion (47415) with score 0.362
+                - Otome Smile (944)
+
+}
+```
+
+### Shinozuka Yayoi (White Album)
+```
+Enter the Char ID: 58533
+Recommendations for Shinozuka Yayoi (58533) gender_match=True, exclude_same_vns=True:
+Traits:
+{
+        1. Takatsu Yukina (87779) with score 0.447
+                - Toji no Miko: Kizamishi Issen no Tomoshibi (27434)
+
+        2. Gamou Makiko (89327) with score 0.424
+                - 7'scarlet (18162)
+
+        3. Ooba Kaho (74001) with score 0.365
+                - Sore Ike! Chinporter! ~Shinshutsukibotsu na Ore no Are~ (23315)
+
+        4. Wisht (99921) with score 0.365
+                - Methods: The Detective Competition (26007)
+
+        5. Sora's Mother (113308) with score 0.335
+                - Project: Perfectly Normal (29419)
+
+        6. Nakamura (26060) with score 0.316
+                - Milkyway 3 (6193)
+
+        7. Kurosaki Yuu (102571) with score 0.316
+                - School Festa (4438)
+
+        8. Midorikawa Emu (108575) with score 0.316
+                - Sweet Days (9103)
+
+        9. Natasha (103661) with score 0.316
+                - Luna's Fall From Grace (30352)
+
+        10. Hazuki (119373) with score 0.316
+                - Itazura Teacher ~Himitsu no Hokenshitsu~ (39917)
+
+        11. Momoka (119374) with score 0.316
+                - Ecchi na Himitsu Kichi 2 ~Kondo wa Kankinda~ (39918)
+
+        12. Gein Spare Ribs (102013) with score 0.316
+                - GUN GRAVE (33199)
+
+        13. Okadama Natsuki (118296) with score 0.316
+                - 300 Nen Buri no Chikyuu ni, Nake (39410)
+
+        14. Kurenai (85581) with score 0.316
+                - Net High (18943)
+
+        15. Kozuka Hiroko (94861) with score 0.316
+                - Owarinaki Natsu, Towa Naru Shirabe (1743)
+
+        16. Nurse Furukawa (118658) with score 0.316
+                - BLACK SHEEP TOWN (21069)
+
+        17. Saegusa Akiko (77277) with score 0.316
+                - Mama Shibori (6059)
+
+        18. Girl (80695) with score 0.316
+                - Daiku no Medium (25361)
+
+        19. Nia Aphrodite (114452) with score 0.316
+                - Luna Majogari (16457)
+
+        20. Anna (80696) with score 0.316
+                - Daiku no Medium (25361)
+
+        21. Yoshie Sakura (56308) with score 0.316
+                - Iinazuke (7008)
+
+        22. Karin Okazaki (33099) with score 0.316
+                - Switch - Fluch oder Segen (7827)
+                - Alternate - Der Fall Okazaki (7828)
+
+        23. Elmaria (101587) with score 0.316
+                - Akikaze Yozora ~Boy Meets UFO~ (6423)
+
+        24. Aihara Koyori (102473) with score 0.316
+                - Dr. Peko Himitsu no Shinryoujo 2 ~Mamori no Himitsu Kaiketsu Itashimasu~ (9788)
+
+        25. Abigail (105824) with score 0.316
+                - University of Problems (32644)
+
+}
+```
+
+</details>
