@@ -1,6 +1,8 @@
 # Visual Novel Recommendation Engine
 A simple visual novel recommendation engine using VNDB data dumps.
 
+# [VNLike.org - Live Web Version](https://vnlike.org/)
+
 ## Quickstart
 Follow these steps to just get recommendations on Windows. Linux/Mac users, YOYO, but it should be similar.
 
@@ -53,6 +55,9 @@ VN_ID is the VNDB id (**without** the leading v). For example, https://vndb.org/
 
 ## Using VNDB Data Dumps
 This repo stores the necessary dumps as of **May 26, 2023**, but you can always update them manually by visiting [VNDB's Data Dumps](https://vndb.org/d14). Make sure the votes file is renamed to `votes`. The other files can be pulled out of the `db` folder from the nearly-complete database download. Place them in the local `data` folder.
+
+## SQL Dump
+There is also a SQL dump with 100 entries per score (user, tag, combined) per VN in rec.db using the default params for ease of web use. This can be updated by executing `dump.py`.
 
 ## API Usage
 ```python
