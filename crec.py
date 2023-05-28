@@ -82,9 +82,16 @@ class vnchar:
             print("Building kNN model")
         self.model_knn = NearestNeighbors(metric = 'cosine', algorithm = 'brute')
         self.model_knn.fit(self.knn_matrix)
+        
+        if self.verbose:
+            print("Loading complete.")
+            print("")
 
     def get_character_name(self, character_id):
-        return self.df_chars[self.df_chars['id'] == character_id]['lookup_name'].values[0]
+        name = self.df_chars[self.df_chars['id'] == character_id]['lookup_name'].values[0]
+        if pd.isna(name):
+            name = "N/A"
+        return name
     
     def get_char_vns(self, character_id):
         # filter DataFrame by character id

@@ -10,7 +10,8 @@ def print_chars(name, cids):
     print("{")
     ind = 1
     for (cid, score) in cids:
-        print("\t" + str(ind) + ". " + engine.get_character_name(cid) + " (" + str(cid) + ") with score " + str(round(score * 1000.0) / 1000.0))
+        char_name = engine.get_character_name(cid)
+        print("\t" + str(ind) + ". " + char_name + " (" + str(cid) + ") with score " + str(round(score * 1000.0) / 1000.0))
 
         vns = engine.get_char_vns(cid)
         for vid in vns:
