@@ -2841,7 +2841,7 @@ Traits:
 }
 ```
 
-### Kazami Yuuki (Fruit of Grisaia)
+### Kazami Yuuji (Fruit of Grisaia)
 ```
 Enter the Char ID: 567
 Recommendations for Kazami Yuuji (567) gender_match=True, exclude_same_vns=True:
