@@ -50,7 +50,7 @@ class vn:
         if self.verbose:
             print("Loading tags_vn")
         self.df_tags = pd.read_csv('./data/tags_vn', delimiter='\t', header=None, usecols=[1, 2, 4], names=['tag_ID', 'VN_ID', 'rating'])
-        self.df_tags.loc[self.df_tags['tag_ID'].isin(self.ignore_tags), 'rating'] = 0
+        self.df_tags.loc[self.df_tags['tag_ID'].str.slice(1).astype(int).isin(self.ignore_tags), 'rating'] = 0
         self.df_tags['rating'] = np.sign(self.df_tags['rating']) * np.power(np.abs(self.df_tags['rating']), self.tag_exp)
 
         # Remove the first character from each ID
